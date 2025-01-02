@@ -41,6 +41,8 @@ class Vector2D(np.ndarray):
         self[1] += other[1]
         return self
 
+    #+, -, *, *=, +=
+
     def __repr__(self):
         """Reprezentacja techniczna."""
         return f"Vector2D({self[0]:.2f}, {self[1]:.2f})"
