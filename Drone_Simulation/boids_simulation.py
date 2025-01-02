@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 pygame.init()
-
 def parameter_selection_screen():
     pygame.display.set_caption("Parameter Selection - Boid Simulation")
     screen = pygame.display.set_mode((800, 600))
     font = pygame.font.Font(None, 36)
+    title_font = pygame.font.Font(None, 48)
     clock = pygame.time.Clock()
 
     # Default parameter values
@@ -36,34 +36,42 @@ def parameter_selection_screen():
     }
 
     input_boxes = {
-        key: pygame.Rect(400, 100 + i * 50, 140, 40)
+        key: pygame.Rect(400, 120 + i * 60, 200, 40)
         for i, key in enumerate(parameters.keys())
     }
     active_box = None
     user_inputs = {key: str(value) for key, value in parameters.items()}
 
+    def draw_button(rect, text, color, text_color):
+        pygame.draw.rect(screen, color, rect, border_radius=10)
+        text_surface = font.render(text, True, text_color)
+        text_rect = text_surface.get_rect(center=rect.center)
+        screen.blit(text_surface, text_rect)
+
     def draw_screen():
-        screen.fill((50, 50, 50))
-        title = font.render("Set Parameters for Boid Simulation", True, (255, 255, 255))
-        screen.blit(title, (200, 20))
+        screen.fill((30, 30, 30))  # Dark background for a professional look
+        title = title_font.render("Parameter Selection", True, (255, 255, 255))
+        screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 30))
 
         for i, (key, rect) in enumerate(input_boxes.items()):
-            label = font.render(f"{key}: ", True, (255, 255, 255))
-            screen.blit(label, (150, rect.y + 5))
-            pygame.draw.rect(screen, (200, 200, 200), rect, 2)
+            label = font.render(f"{key.replace('_', ' ').capitalize()}: ", True, (200, 200, 200))
+            screen.blit(label, (100, rect.y + 5))
+
+            # Highlight active box in green
+            if key == active_box:
+                pygame.draw.rect(screen, (0, 100, 0), rect, border_radius=5)  # Green background for active box
+            else:
+                pygame.draw.rect(screen, (100, 100, 100), rect, border_radius=5)  # Default background color
+
+            pygame.draw.rect(screen, (200, 200, 200), rect, 2, border_radius=5)  # Border for all boxes
             text_surface = font.render(user_inputs[key], True, (255, 255, 255))
-            screen.blit(text_surface, (rect.x + 5, rect.y + 5))
+            screen.blit(text_surface, (rect.x + 10, rect.y + 5))
 
-        # Start and Reset buttons
-        start_button = pygame.Rect(200, 400, 150, 50)
-        pygame.draw.rect(screen, (0, 255, 0), start_button)
-        start_text = font.render("Start", True, (0, 0, 0))
-        screen.blit(start_text, (start_button.x + 40, start_button.y + 10))
-
-        reset_button = pygame.Rect(400, 400, 150, 50)
-        pygame.draw.rect(screen, (255, 0, 0), reset_button)
-        reset_text = font.render("Reset", True, (0, 0, 0))
-        screen.blit(reset_text, (reset_button.x + 40, reset_button.y + 10))
+        # Buttons
+        start_button = pygame.Rect(200, 500, 150, 50)
+        reset_button = pygame.Rect(450, 500, 150, 50)
+        draw_button(start_button, "Start", (0, 200, 0), (0, 0, 0))
+        draw_button(reset_button, "Reset", (200, 0, 0), (255, 255, 255))
 
         return start_button, reset_button
 

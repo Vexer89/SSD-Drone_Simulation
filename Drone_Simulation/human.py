@@ -10,5 +10,7 @@ class Human:
         self.color = color
 
     def draw(self, surface):
-        pygame.draw.circle(surface, self.color, (self.x, self.y), self.size)
-        
+        # Draw the border (dark red)
+        pygame.draw.circle(surface, (110, 0, 0), (self.x, self.y), self.size + 2)  # Border is slightly larger
+        # Draw the inner circle (red)
+        pygame.draw.circle(surface, (255, 0, 0), (self.x, self.y), self.size)
