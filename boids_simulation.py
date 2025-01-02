@@ -5,8 +5,8 @@ import pygame
 import numpy as np
 
 #from controls import default_controls
-from engine import CharacterEntity
-from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
+from drones import DroneFlock
+from control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
 from game_settings import GameSettings
 
 from obstacle import *
@@ -23,7 +23,7 @@ def main():
     game_settings = GameSettings()
     # game_settings.debug = True
 
-    pygame.display.set_caption("Boid Simulation")
+    pygame.display.set_caption("Drone Simulation")
     win = pygame.display.set_mode((game_settings.window_width, game_settings.window_height))
     fill_colour = (0, 0, 0)
     light_gray = (200, 200, 200)
@@ -44,7 +44,7 @@ def main():
 
     obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
 
-    flock = BoidFlock(game_settings)
+    flock = DroneFlock(game_settings)
     flock_rules: List[BoidRule] = [
         CohesionRule(weighting=0.7, game_settings=game_settings),
         AlignmentRule(weighting=1, game_settings=game_settings),
@@ -54,9 +54,9 @@ def main():
         AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
     ]
 
-    flock.generate_boids(n_boids, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed)
+    flock.generate_drones(n_boids, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed)
 
-    entities = flock.boids
+    entities = flock.drones
     tick_length = int(1000/game_settings.ticks_per_second)
 
     last_tick = pygame.time.get_ticks()
