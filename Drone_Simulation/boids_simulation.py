@@ -49,6 +49,7 @@ def parameter_selection_screen():
         screen.blit(text_surface, text_rect)
 
     def draw_screen():
+
         screen.fill((30, 30, 30))  # Dark background for a professional look
         title = title_font.render("Parameter Selection", True, (255, 255, 255))
         screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 30))
@@ -57,7 +58,7 @@ def parameter_selection_screen():
             label = font.render(f"{key.replace('_', ' ').capitalize()}: ", True, (200, 200, 200))
             screen.blit(label, (100, rect.y + 5))
 
-            # Highlight active box in green
+            # Highlight active box in dark green
             if key == active_box:
                 pygame.draw.rect(screen, (0, 100, 0), rect, border_radius=5)  # Green background for active box
             else:
