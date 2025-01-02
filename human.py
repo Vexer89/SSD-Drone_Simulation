@@ -1,6 +1,9 @@
 import pygame
 import constants
 
+#TODO:
+# human should inherit entity
+
 class Human:
     def __init__(self, x, y, size=4, color=constants.RED):
         self.x = x

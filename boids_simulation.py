@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 pygame.init()
 
+#TODO:
+# start button
+# sector and human generation
+# human mark as found
+# simulation  time limit
 
 def main():
     game_settings = GameSettings()

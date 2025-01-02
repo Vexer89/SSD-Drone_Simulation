@@ -10,6 +10,10 @@ from vector2D import Vector2D
 
 logger = logging.getLogger(__name__)
 
+#TODO:
+# rewrite rules to vectors
+# attractiveness rule
+
 class BoidRule(ABC):
     _name = "BoidRule"
 

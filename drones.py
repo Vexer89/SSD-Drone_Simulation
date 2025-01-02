@@ -13,6 +13,10 @@ from vector2D import Vector2D
 
 logger = logging.getLogger(__name__)
 
+#TODO:
+# verify
+# max speed and acc
+
 
 class DroneFlock:
     def __init__(self, game_settings: GameSettings):
