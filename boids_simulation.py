@@ -22,9 +22,13 @@ logger = logging.getLogger(__name__)
 
 
 pygame.init()
+
 def parameter_selection_screen():
+    if not pygame.font.get_init():
+        pygame.font.init()
+
     pygame.display.set_caption("Parameter Selection - Boid Simulation")
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((1024, 768))
     font = pygame.font.Font(None, 36)
     title_font = pygame.font.Font(None, 48)
     clock = pygame.time.Clock()
@@ -37,6 +41,8 @@ def parameter_selection_screen():
         "boid_radius": 100,
         "boid_max_speed": 100,
         "simulation_time": 30,  # New parameter for simulation time
+        "rows" : 10,
+        "columns" : 10
     }
 
     input_boxes = {
@@ -72,8 +78,8 @@ def parameter_selection_screen():
             screen.blit(text_surface, (rect.x + 10, rect.y + 5))
 
         # Buttons
-        start_button = pygame.Rect(200, 500, 150, 50)
-        reset_button = pygame.Rect(450, 500, 150, 50)
+        start_button = pygame.Rect(200, 700, 150, 50)
+        reset_button = pygame.Rect(450, 700, 150, 50)
         draw_button(start_button, "Start", (0, 200, 0), (0, 0, 0))
         draw_button(reset_button, "Reset", (200, 0, 0), (255, 255, 255))
 
@@ -120,22 +126,40 @@ def parameter_selection_screen():
 
 
 def show_results_screen(humans_found):
+    if not pygame.font.get_init():
+        pygame.font.init()
     pygame.display.set_caption("Simulation Results")
     screen = pygame.display.set_mode((800, 600))
     font = pygame.font.Font(None, 48)
+    small_font = pygame.font.Font(None, 36)
+    clock = pygame.time.Clock()
+
+    restart_button = pygame.Rect(300, 400, 200, 50)  # Define the Restart button rectangle
 
     running = True
     while running:
         screen.fill((30, 30, 30))
         text = font.render(f"Humans found: {humans_found}", True, (255, 255, 255))
-        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2))
+        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - 100))
+
+        # Draw the Restart button
+        pygame.draw.rect(screen, (0, 200, 0), restart_button, border_radius=10)
+        restart_text = small_font.render("Restart", True, (0, 0, 0))
+        screen.blit(restart_text, (restart_button.x + (restart_button.width - restart_text.get_width()) // 2,
+                                   restart_button.y + (restart_button.height - restart_text.get_height()) // 2))
 
         pygame.display.flip()
+        clock.tick(30)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button.collidepoint(event.pos):
+                    running = False
+                    #parameter_selection_screen()
+
+    pygame.quit()
 
 
 def check_collision(entity1, entity2, radius):
@@ -161,6 +185,8 @@ def main():
         boid_radius = parameters["boid_radius"]
         boid_max_speed = parameters["boid_max_speed"]
         simulation_time = parameters["simulation_time"]
+        rows = parameters["rows"]
+        columns = parameters["columns"]
 
         game_settings = GameSettings()
         # game_settings.debug = True
@@ -176,7 +202,7 @@ def main():
         max_width = win.get_width()
         max_height = win.get_height()
 
-        sim_map = Map(max_width, max_height)
+        sim_map = Map(max_width, max_height, rows, columns)
 
         rect1 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 300, 100, light_gray)
         rect2 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 100, 300, light_gray)
