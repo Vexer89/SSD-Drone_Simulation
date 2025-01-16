@@ -286,7 +286,7 @@ def main():
 
             sim_map.draw(win)
 
-
+            sim_map.update_attractiveness()
 
             time_since_last_tick = pygame.time.get_ticks() - last_tick
             if time_since_last_tick < tick_length:
