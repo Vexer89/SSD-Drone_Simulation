@@ -196,7 +196,15 @@ def main():
             AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
         ]
 
-        flock.generate_boids(n_boids, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed, obstacles=obstacles)
+        positions = []
+        for _ in range(n_boids):
+            while True:
+                x, y = random.randint(0, win.get_width()), random.randint(0, win.get_height())
+                if is_valid_position(x, y, obstacles):
+                    positions.append((x, y))
+                    break      
+
+        flock.generate_boids(n_boids, positions, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed)
         
         entities = flock.boids
         tick_length = int(1000/game_settings.ticks_per_second)

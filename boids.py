@@ -21,19 +21,18 @@ class BoidFlock:
         self._boids: List[Boid] = None
         self.game_settings = game_settings
 
-    def generate_boids(self, n_boids, rules=None, **kwargs):
-        
+    def generate_boids(self, n_boids, positions, rules=None, **kwargs):
+        positionsc = np.array(positions)
 
         self._boids = [
             Boid(
-                pos=np.array([random.randint(0, self.game_settings.map_width),
-                              random.randint(0, self.game_settings.map_height)]),
+                position=positionsc[i],
                 game_settings=self.game_settings,
                 rules=rules,
                 flock=self,
                 **kwargs,
             )
-            for _ in range(n_boids)
+            for i in range(n_boids)
         ]
 
     @property
@@ -55,7 +54,7 @@ class Boid(PhysicsObject):
     def pos(self):
         return self._pos
 
-    def __init__(self, *args, flock: BoidFlock, colour=None, rules=None, size=10, local_radius=200, max_velocity=30,
+    def __init__(self, *args, flock: BoidFlock, position, colour=None, rules=None, size=10, local_radius=200, max_velocity=30,
                  speed=20, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -68,6 +67,7 @@ class Boid(PhysicsObject):
         self.colour = colour
         self.flock = flock
         self.size = size
+        self._pos = position
 
         self.local_radius = local_radius
         self.max_velocity = max_velocity
