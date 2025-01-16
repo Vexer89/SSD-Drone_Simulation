@@ -5,10 +5,12 @@ import random
 
 import pygame
 import numpy as np
+from scipy.cluster.hierarchy import weighted
 
 #from controls import default_controls
 from engine import CharacterEntity
-from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
+from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
+    SideBySideFormationRule, AvoidObstaclesRule, NoiseRule, AntiCollisionRule
 from game_settings import GameSettings
 import sys
 
@@ -37,7 +39,7 @@ def parameter_selection_screen():
     parameters = {
         "n_boids": 50,
         "n_humans": 15,
-        "boid_fear": 20,
+        "boid_fear": 15,
         "boid_radius": 100,
         "boid_max_speed": 100,
         "simulation_time": 30,  # New parameter for simulation time
@@ -244,8 +246,10 @@ def main():
             AlignmentRule(weighting=0.7, game_settings=game_settings),
             AvoidWallsRule(weighting=1, game_settings=game_settings, push_force=100),
             SimpleSeparationRule(weighting=0.9, game_settings=game_settings, push_force=boid_fear),
-            SideBySideFormationRule(weighting=0.15, game_settings=game_settings, spacing=90, noise_factor=0.1),
+            # SideBySideFormationRule(weighting=0.3, game_settings=game_settings, spacing=50, noise_factor=0.1),
             AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
+            NoiseRule(weighting=0.1, game_settings=game_settings),
+            # AntiCollisionRule(weighting=0.7, game_settings=game_settings)
         ]
 
         positions = []
