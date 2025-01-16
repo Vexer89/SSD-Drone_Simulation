@@ -4,9 +4,9 @@ from typing import List
 
 import numpy as np
 
-from drones import Drone
-from game_settings import GameSettings
-from vector2D import Vector2D
+from simulation.entities.swarm.drones import Drone
+from simulation.game_settings import GameSettings
+from simulation.utils.vector2D import Vector2D
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +25,11 @@ class BoidRule(ABC):
     def _evaluate(self, boid: Drone, local_boids: List[Drone]):
         pass
 
-    def evaluate(self, boid, local_boids: List[Drone], actions):
+    def evaluate(self, boid, local_boids: List[Drone]):
         output = self._evaluate(boid, local_boids)
         if np.isnan(output).any():
             logger.warning(f"NaN encountered in {self.name}")
-            return np.array([0, 0])
+            return Vector2D(0, 0)
         return output
 
     @property
@@ -123,7 +123,7 @@ class AvoidWallsRule(BoidRule):
         adjusted_magnitudes = magnitudes**2
         acceleration = np.sum(normed_directions * (self.push_force / adjusted_magnitudes)[:, np.newaxis], axis=0)
 
-        return acceleration
+        return Vector2D(acceleration[0], acceleration[1])
 
 
 class AvoidObstaclesRule(BoidRule):
@@ -133,7 +133,7 @@ class AvoidObstaclesRule(BoidRule):
         self.push_force = push_force
 
     def _evaluate(self, boid, local_boids, **kwargs):
-        acceleration = np.array([0.0, 0.0])
+        acceleration = Vector2D(0.0, 0.0)
         for obstacle in self.obstacles:
             if obstacle.contains(boid.pos):
                 direction_offset = boid.pos - obstacle.center
@@ -157,7 +157,7 @@ class MoveRightRule(BoidRule):
     _name = "MoveRight"
 
     def _evaluate(self, boid: Drone, local_boids: List[Drone], **kwargs):
-        return np.array([10, 0])
+        return Vector2D(10, 0)
 
 
 class SideBySideFormationRule(BoidRule):
@@ -175,7 +175,8 @@ class SideBySideFormationRule(BoidRule):
     def _evaluate(self, boid: Drone, local_boids: List[Drone], **kwargs):
         if not local_boids:
             # If no neighbors, introduce some random noise
-            return np.random.uniform(-1, 1, 2) * self.noise_factor
+            noise = np.random.uniform(-1, 1, 2) * self.noise_factor
+            return Vector2D(noise[0], noise[1])
 
         # Fixed direction for the line (horizontal in this case)
         line_direction = np.array([1.0, 0.0])  # Boids will form a horizontal line
@@ -204,4 +205,4 @@ class SideBySideFormationRule(BoidRule):
         total_force = lateral_force + noise
 
         # Ensure the result is finite
-        return np.nan_to_num(total_force)
+        return Vector2D(total_force[0], total_force[1])

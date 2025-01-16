@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from entity import Entity
-from vector2D import Vector2D
+from simulation.entities.entity import Entity
+from simulation.utils.vector2D import Vector2D
 
 
 class PhysicsObject(Entity, ABC):
@@ -30,4 +30,5 @@ class PhysicsObject(Entity, ABC):
 
     def update_physics(self, time_elapsed: float):
         self.v += self.a * time_elapsed
+        self.pos = self.pos.astype(float)
         self.pos += self.v * time_elapsed

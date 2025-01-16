@@ -5,11 +5,11 @@ import logging
 import numpy as np
 import pygame
 
-from entity import Entity
-from physics_2d import PhysicsObject
+from simulation.entities.entity import Entity
+from simulation.entities.physics_2d import PhysicsObject
 
-from game_settings import GameSettings
-from vector2D import Vector2D
+from simulation.game_settings import GameSettings
+from simulation.utils.vector2D import Vector2D
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +41,15 @@ class DroneFlock:
         return self._drones
 
     def get_local_drones(self, drone: Entity):
-        return [other_drone for other_drone in self.drones
-                if drone.distance_to(other_drone) < drone.local_radius and drone != other_drone]
+        local_drones = [other_drone for other_drone in self.drones
+                    if drone.distance_to(other_drone) < drone.local_radius and drone != other_drone]
+        # Sortowanie po odległości i ograniczenie do 5
+        local_drones.sort(key=lambda d: drone.distance_to(d))
+        return local_drones[:5]
 
 
 class Drone(PhysicsObject):
-    def __init__(self, *args, flock: 'DroneFlock', colour=None, rules=None, size=10, local_radius=200,
+    def __init__(self, *args, flock: 'DroneFlock', colour=None, rules=None, size=10, local_radius=100,
                  max_velocity=30, speed=20, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -64,6 +67,8 @@ class Drone(PhysicsObject):
             random.randint(0, 255),
             random.randint(0, 255)
         )
+
+
 
     @PhysicsObject.v.setter
     def v(self, value: Vector2D):
@@ -102,6 +107,10 @@ class Drone(PhysicsObject):
 
         # Aktualizacja prędkości i pozycji
         self.v += self.a * time_elapsed
+        if self.v.magnitude() > self.max_velocity:
+            self.v = self.v.normalized() * self.max_velocity
+        self.pos = self.pos.astype(float)
+        self.pos += self.v * time_elapsed
         super().update_physics(time_elapsed)
 
     def calculate_rules(self, local_boids: List['Drone']) -> Vector2D:
@@ -109,8 +118,9 @@ class Drone(PhysicsObject):
         Oblicza wektor przyspieszenia na podstawie reguł zachowania stada.
         """
         # Suma wszystkich wektorów wpływu reguł, uwzględniając wagi reguł
-        acceleration = sum(
-            rule.evaluate(self, local_boids) * rule.weight
-            for rule in self.rules
-        )
+        acceleration = Vector2D(0, 0)
+        for rule in self.rules:
+            rule_output = rule.evaluate(self, local_boids)
+            #print(f"Rule: {rule.name}, Output: {rule_output}")
+            acceleration += rule_output
         return acceleration

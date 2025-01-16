@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
-from constants import GREEN, WHITE
-from equation_const import ALPHA, BETA
+from consts.constants import GREEN, WHITE
+from consts.equation_const import ALPHA, BETA
 
 #TODO:
 # maybe sector should inherit entity?

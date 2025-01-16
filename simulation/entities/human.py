@@ -1,5 +1,5 @@
 import pygame
-import constants
+import simulation.consts.constants as constants
 
 #TODO:
 # human should inherit entity

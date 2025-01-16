@@ -5,8 +5,8 @@ from typing import Dict, List
 import numpy as np
 import pygame
 
-from game_settings import MapEdgeBehaviour, GameSettings
-from vector2D import Vector2D
+from simulation.game_settings import MapEdgeBehaviour, GameSettings
+from simulation.utils.vector2D import Vector2D
 
 
 class Entity(ABC):
@@ -31,7 +31,9 @@ class Entity(ABC):
         self._pos = pos
 
     def distance_to(self, other: 'Entity') -> float:
-        return (self.pos - other.pos).magnitude()
+        pos_vector = Vector2D(self.pos[0], self.pos[1])
+        other_pos_vector = Vector2D(other.pos[0], other.pos[1])
+        return (pos_vector - other_pos_vector).magnitude()
 
     @abstractmethod
     def update_physics(self, time_elapsed):

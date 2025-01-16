@@ -5,11 +5,11 @@ import pygame
 import numpy as np
 
 #from controls import default_controls
-from drones import DroneFlock
-from control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
+from entities.swarm.drones import DroneFlock
+from entities.swarm.control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
 from game_settings import GameSettings
 
-from obstacle import *
+from entities.obstacle import *
 
 
 logging.basicConfig()
@@ -33,7 +33,7 @@ def main():
     fill_colour = (0, 0, 0)
     light_gray = (200, 200, 200)
 
-    n_boids = 50
+    n_boids = 10
     boid_fear = 20
     boid_radius = 100
     boid_max_speed = 100
@@ -51,11 +51,11 @@ def main():
 
     flock = DroneFlock(game_settings)
     flock_rules: List[BoidRule] = [
-        CohesionRule(weighting=0.7, game_settings=game_settings),
-        AlignmentRule(weighting=1, game_settings=game_settings),
+        CohesionRule(weighting=0.8, game_settings=game_settings),
+        AlignmentRule(weighting=0.8, game_settings=game_settings),
         AvoidWallsRule(weighting=1, game_settings=game_settings, push_force=100),
-        SimpleSeparationRule(weighting=1, game_settings=game_settings, push_force=boid_fear),
-        SideBySideFormationRule(weighting=0.25, game_settings=game_settings, spacing=90, noise_factor=0.1),
+        SimpleSeparationRule(weighting=0.8, game_settings=game_settings, push_force=boid_fear),
+        #SideBySideFormationRule(weighting=0.25, game_settings=game_settings, spacing=90, noise_factor=0.1),
         AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
     ]
 
@@ -87,8 +87,10 @@ def main():
 
         for entity in entities:
             entity.update(keys, win, time_since_last_tick/1000)
+            entity.draw(win)
 
-        pygame.display.flip()
+        pygame.display.update()
+        pygame.time.delay(tick_length)
 
     pygame.quit()
 

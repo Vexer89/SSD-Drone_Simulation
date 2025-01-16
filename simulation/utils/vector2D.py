@@ -10,9 +10,31 @@ class Vector2D(np.ndarray):
         # `__new__` już utworzyło tablicę, więc tu nie musimy nic robić
         pass
 
+    @property
+    def x(self) -> float:
+        return self[0]
+
+    @x.setter
+    def x(self, value: float):
+        self[0] = value
+
+    @property
+    def y(self) -> float:
+        return self[1]
+
+    @y.setter
+    def y(self, value: float):
+        self[1] = value
+
     def magnitude(self) -> float:
         """Zwraca długość wektora."""
         return np.linalg.norm(self)
+    
+    def normalized(self) -> "Vector2D":
+        magnitude = self.magnitude()
+        if magnitude == 0:
+            return Vector2D(0, 0)
+        return Vector2D(self.x / magnitude, self.y / magnitude)
 
     def __add__(self, other: "Vector2D") -> "Vector2D":
         """Dodawanie dwóch wektorów."""
@@ -50,3 +72,8 @@ class Vector2D(np.ndarray):
     def __str__(self):
         """Przyjazna reprezentacja tekstowa."""
         return f"({self[0]:.2f}, {self[1]:.2f})"
+    
+    def __eq__(self, other):
+        if isinstance(other, Vector2D):
+            return np.array_equal(self, other)
+        return False
