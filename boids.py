@@ -41,10 +41,24 @@ class BoidFlock:
         return self._boids
 
     def get_local_boids(self, boid: Entity):
+        def is_within_side_view(target):
+            # Wektor od boida do celu
+            vector_to_target = target.pos - boid.pos
+            # Normalizacja wektorów
+            vector_to_target_normalized = vector_to_target / np.linalg.norm(vector_to_target)
+            boid_direction_normalized = boid.v / np.linalg.norm(boid.v) if np.linalg.norm(boid.v) > 0 else np.array([1, 0])
+
+            # Kąt między wektorem prędkości boida a wektorem do celu
+            dot_product = np.dot(vector_to_target_normalized, boid_direction_normalized)
+            angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
+
+            # Sprawdź, czy kąt jest w preferowanym zakresie (do 150 stopni w każdą stronę od przodu)
+            return (angle > np.radians(30)) and (angle < np.radians(150))
+
         return [other_boid for other_boid in self.boids
-                if boid.distance_to(other_boid) < boid.local_radius and boid != other_boid]
-
-
+                if boid != other_boid and
+                np.linalg.norm(boid.pos - other_boid.pos) < boid.local_radius and
+                is_within_side_view(other_boid)]
 class Boid(PhysicsObject):
 
     @property
@@ -195,51 +209,63 @@ class SimpleSeparationRule(BoidRule):
         return np.nan_to_num(v)
 
 
-
 class AlignmentRule(BoidRule):
     _name = "Alignment"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _evaluate(self, boid: Boid, local_boids, **kwargs):
         if not local_boids:
-            # Kontynuacja ruchu w obecnym kierunku prędkości
             if np.linalg.norm(boid.v) > 0:
                 return boid.v / np.linalg.norm(boid.v)
             else:
-                return np.array([0, 0])  # Brak ruchu, jeśli prędkość początkowa jest zero
+                # Losowy kierunek, gdy prędkość jest zerowa
+                random_direction = np.random.randn(2)
+                return random_direction / np.linalg.norm(random_direction)
 
-        # Wyrównaj prędkości
-        avg_velocity = np.mean([b.v for b in local_boids], axis=0)
-        if np.linalg.norm(avg_velocity) == 0:
-            return np.array([0, 0])
-
-        # Normalize to match boid speed
-        return avg_velocity / np.linalg.norm(avg_velocity)
-
+        velocities = np.array([b.v for b in local_boids])
+        avg_velocity = np.mean(velocities, axis=0)
+        return avg_velocity / np.linalg.norm(avg_velocity) if np.linalg.norm(avg_velocity) > 0 else np.zeros(2)
 
 
 
 class CohesionRule(BoidRule):
     _name = "Cohesion"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
         if len(local_boids) == 0:
-            # Losowy kierunek, gdy nie ma sąsiednich boidów
-            random_direction = np.random.rand(2) - 0.5
-            random_direction = random_direction / np.linalg.norm(random_direction)
-            return random_direction
+            inertia = boid.v * 0.95  # Zachowaj 95% obecnej prędkości
+            small_random_component = np.random.randn(2) * 0.05  # Dodaj 5% losowości
+            new_direction = inertia + small_random_component
+            return new_direction / np.linalg.norm(new_direction)
 
-        average_pos = np.array([b.pos for b in local_boids]).mean(axis=0)
-        diff = average_pos - boid.pos
-        mag = np.sqrt((diff**2).sum())
-        if mag == 0:
-            return np.array([0, 0])
-        return diff / mag
+
+        average_pos = np.mean([b.pos for b in local_boids], axis=0)
+        offset = np.zeros(2)
+        for other in local_boids:
+            # Przesunięcie każdego boida, aby uniknąć lądowania za innym boidem
+            vector_between = boid.pos - other.pos
+            distance = np.linalg.norm(vector_between)
+            if distance < boid.local_radius / 2:  # Jeśli są zbyt blisko siebie
+                offset += vector_between / distance  # Odsuń się proporcjonalnie do odległości
+
+        direction_to_avg = average_pos - boid.pos
+        if np.linalg.norm(direction_to_avg) > 0:
+            direction_to_avg /= np.linalg.norm(direction_to_avg)
+
+        return direction_to_avg + 0.1 * offset  # Ustawione, aby offset miał mniejszy wpływ
+
+
+class AntiCollisionRule(BoidRule):
+    _name = "AntiCollision"
+
+    def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
+        force = np.zeros(2)
+        for other in local_boids:
+            diff = boid.pos - other.pos
+            dist = np.linalg.norm(diff)
+            if dist < 30:  # Minimalna odległość do utrzymania
+                force += diff / dist  # Oddal się od innych boidów
+
+        return force
 
 
 
@@ -315,52 +341,42 @@ class NoiseRule(BoidRule):
 #     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
 #         return np.cross(boid.v, np.array([0, 0, 1]))[:2]
 
-
 class SideBySideFormationRule(BoidRule):
     _name = "SideBySideFormation"
 
     def __init__(self, *args, spacing=50, noise_factor=0.1, **kwargs):
-        """
-        spacing: Desired lateral spacing between boids in the line.
-        noise_factor: Amount of randomness to introduce in the movement.
-        """
         super().__init__(*args, **kwargs)
         self.spacing = spacing
         self.noise_factor = noise_factor
 
     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
         if not local_boids:
-            # If no neighbors, introduce some random noise
             return np.random.uniform(-1, 1, 2) * self.noise_factor
 
-        # Fixed direction for the line (horizontal in this case)
-        line_direction = np.array([1.0, 0.0])  # Boids will form a horizontal line
-        lateral_direction = np.array([-line_direction[1], line_direction[0]])  # Perpendicular to the line
+        # Calculate the average velocity of local boids to determine the line direction
+        avg_velocity = np.mean([b.v for b in local_boids], axis=0)
+        if np.linalg.norm(avg_velocity) > 0:
+            line_direction = avg_velocity / np.linalg.norm(avg_velocity)
+        else:
+            line_direction = np.array([0.0, 0.0])  # Default direction if stationary
 
-        # Initialize force
-        lateral_force = np.array([0.0, 0.0], dtype=float)
+        lateral_direction = np.array([-line_direction[1], line_direction[0]])  # Perpendicular to line direction
 
+        lateral_force = np.zeros(2)
         for other_boid in local_boids:
-            # Compute relative position
             relative_position = boid.pos - other_boid.pos
-
-            # Project the relative position onto the lateral direction
             lateral_distance = np.dot(relative_position, lateral_direction)
 
-            # Apply force to maintain side-by-side spacing
             if abs(lateral_distance) < self.spacing:
                 adjustment = (self.spacing - abs(lateral_distance)) / self.spacing
                 sign = -1 if lateral_distance > 0 else 1
                 lateral_force += sign * lateral_direction * adjustment
 
-        # Add some randomness (noise) to the movement
         noise = np.random.uniform(-1, 1, 2) * self.noise_factor
-
-        # Combine lateral force and noise
         total_force = lateral_force + noise
 
-        # Ensure the result is finite
         return np.nan_to_num(total_force)
+
 
 
 
