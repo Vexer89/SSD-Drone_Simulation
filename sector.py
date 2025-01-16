@@ -3,10 +3,6 @@ import numpy as np
 from constants import GREEN, WHITE
 from equation_const import ALPHA, BETA
 
-#TODO:
-# maybe sector should inherit entity?
-# something to check which drones are inside
-
 class Sector:
     def __init__(self, row, col, size, searched=False):
         self.row = row

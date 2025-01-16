@@ -6,35 +6,38 @@ import numpy as np
 import pygame
 
 from game_settings import MapEdgeBehaviour, GameSettings
-from vector2D import Vector2D
+
+
+class EntityAction(Enum):
+    MOVE_UP = auto()
+    MOVE_DOWN = auto()
+    MOVE_LEFT = auto()
+    MOVE_RIGHT = auto()
 
 
 class Entity(ABC):
-    def __init__(self, game_settings: GameSettings, pos: Vector2D = Vector2D(0, 0),
-                 colour: tuple[int, int, int] = (255, 0, 0), **kwargs):
+    def __init__(self, game_settings: GameSettings, controls: Dict[int, EntityAction] = None, pos=np.array([0, 0]),
+                 colour=(255, 0, 0), **kwargs):
+        if controls is None:
+            controls = {}
 
         self._pos = pos
         self.colour = colour
+        self.controls = controls
         self.game_settings: GameSettings = game_settings
+
         self.kwargs = kwargs
 
     @abstractmethod
     def draw(self, win):
         pass
 
-    @property
-    def pos(self) -> Vector2D:
-        return self._pos
-
-    @pos.setter
-    def pos(self, pos: Vector2D):
-        self._pos = pos
-
-    def distance_to(self, other: 'Entity') -> float:
-        return (self.pos - other.pos).magnitude()
+    # @property
+    # def pos(self):
+    #     return np.array([self.x, self.pos[1]])
 
     @abstractmethod
-    def update_physics(self, time_elapsed):
+    def update_physics(self, actions: List[EntityAction], time_elapsed):
         pass
 
     def check_physics(self):
@@ -62,6 +65,9 @@ class Entity(ABC):
             if self.game_settings.y_edge_behaviour == MapEdgeBehaviour.CLAMP:
                 self.pos[1] = 0
 
+    def parse_controls(self, keys):
+        return [action for key, action in self.controls.items() if keys[key]]
+
     def get_debug_text(self):
         return f"pos:{self.pos[0]:0.1f}, {self.pos[1]:0.1f}"
 
@@ -71,7 +77,7 @@ class Entity(ABC):
         win.blit(text_surface, (self.pos[0], self.pos[1]))
 
     def update(self, keys, win, time_elapsed):
-        self.update_physics(time_elapsed)
+        self.update_physics(self.parse_controls(keys), time_elapsed)
         self.check_physics()
         self.draw(win)
 
@@ -79,3 +85,26 @@ class Entity(ABC):
             self.draw_debug_info(win)
 
 
+class CharacterEntity(Entity):
+    def __init__(self, *args, width=5, v=200, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.width = width
+        self.v = v
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.colour, (int(self.pos[0]), int(self.pos[1])), self.width)
+
+    def update_physics(self, actions: List[EntityAction], time_elapsed):
+        for action in actions:
+            if action == EntityAction.MOVE_UP:
+                self.pos[1] -= self.v * time_elapsed
+                continue
+            if action == EntityAction.MOVE_DOWN:
+                self.pos[1] += self.v * time_elapsed
+                continue
+            if action == EntityAction.MOVE_LEFT:
+                self.pos[0] -= self.v * time_elapsed
+                continue
+            if action == EntityAction.MOVE_RIGHT:
+                self.pos[0] += self.v * time_elapsed
+                continue

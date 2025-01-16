@@ -1,9 +1,6 @@
 import numpy as np
 import pygame
 
-#TODO:
-# obstacle should inherit entity
-
 class Obstacle:
     def __init__(self, x, y, color):
         self.x = x
