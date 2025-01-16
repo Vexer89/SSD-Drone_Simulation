@@ -82,7 +82,7 @@ class TestDrone(unittest.TestCase):
 
     def test_update_physics(self):
         self.flock.generate_drones(5)
-        self.drone.update_physics(0.1)
+        self.drone.update_physics(1)
         # Check if position is updated correctly
         self.assertNotEqual(
             self.drone.pos.tolist(),

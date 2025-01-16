@@ -2,12 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e931f99-e260-4d94-b07f-4381f9dd1fcc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/boids_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/boids_simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/control_rules.py" beforeDir="false" afterPath="$PROJECT_DIR$/control_rules.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/drones.py" beforeDir="false" afterPath="$PROJECT_DIR$/drones.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entity.py" beforeDir="false" afterPath="$PROJECT_DIR$/entity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/physics_2d.py" beforeDir="false" afterPath="$PROJECT_DIR$/physics_2d.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector2D.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector2D.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SSD-Drone_Simulation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SSD-Drone_Simulation.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation/boids_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation/boids_simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation/entities/entity.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation/entities/entity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation/entities/physics_2d.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation/entities/physics_2d.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation/entities/swarm/control_rules.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation/entities/swarm/control_rules.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation/entities/swarm/drones.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation/entities/swarm/drones.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/drones_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/drones_tests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,9 +19,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2rhvwhILoewWuDJA9uFbPcTVm9U" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -27,12 +29,43 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.boids_simulation.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "v2",
+    "git-widget-placeholder": "vector__code",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration name="boids_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="SSD-Drone_Simulation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/simulation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulation/boids_simulation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.boids_simulation" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -50,10 +83,14 @@
       <option name="presentableId" value="Default" />
       <updated>1737024365115</updated>
       <workItem from="1737024368019" duration="38000" />
+      <workItem from="1737031018383" duration="199000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/SSD_Drone_Simulation$boids_simulation.coverage" NAME="boids_simulation Coverage Results" MODIFIED="1737031182821" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/simulation" />
   </component>
 </project>

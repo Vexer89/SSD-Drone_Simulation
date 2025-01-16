@@ -30,5 +30,5 @@ class PhysicsObject(Entity, ABC):
 
     def update_physics(self, time_elapsed: float):
         self.v += self.a * time_elapsed
-        self.pos = self.pos.astype(float)
+        #self.pos = self.pos.astype(float)
         self.pos += self.v * time_elapsed

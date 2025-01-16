@@ -5,8 +5,8 @@ import logging
 import numpy as np
 import pygame
 
-from simulation.entities.entity import Entity
-from simulation.entities.physics_2d import PhysicsObject
+from ..entity import Entity
+from ..physics_2d import PhysicsObject
 
 from simulation.game_settings import GameSettings
 from simulation.utils.vector2D import Vector2D
@@ -26,8 +26,8 @@ class DroneFlock:
     def generate_drones(self, n_drones, rules=None, **kwargs):
         self._drones = [
             Drone(
-                pos=np.array([random.randint(0, self.game_settings.map_width),
-                              random.randint(0, self.game_settings.map_height)]),
+                pos=Vector2D(random.randint(0, self.game_settings.map_width),
+                              random.randint(0, self.game_settings.map_height)),
                 game_settings=self.game_settings,
                 rules=rules,
                 flock=self,
@@ -74,7 +74,7 @@ class Drone(PhysicsObject):
     def v(self, value: Vector2D):
         magnitude = value.magnitude()
         if magnitude > self.max_velocity:
-            value *= self.max_velocity / magnitude
+            self.v = value.normalized() * self.max_velocity
         self._v = value
 
     def draw(self, win):
@@ -109,7 +109,7 @@ class Drone(PhysicsObject):
         self.v += self.a * time_elapsed
         if self.v.magnitude() > self.max_velocity:
             self.v = self.v.normalized() * self.max_velocity
-        self.pos = self.pos.astype(float)
+        #self.pos = self.pos.astype(float)
         self.pos += self.v * time_elapsed
         super().update_physics(time_elapsed)
 

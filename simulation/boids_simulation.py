@@ -5,11 +5,11 @@ import pygame
 import numpy as np
 
 #from controls import default_controls
-from entities.swarm.drones import DroneFlock
-from entities.swarm.control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
-from game_settings import GameSettings
+from simulation.entities.swarm.drones import DroneFlock
+from simulation.entities.swarm.control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
+from simulation.game_settings import GameSettings
 
-from entities.obstacle import *
+from simulation.entities.obstacle import *
 
 
 logging.basicConfig()
@@ -83,10 +83,9 @@ def main():
             if event.type == pygame.QUIT:
                 game_settings.is_running = False
 
-        keys = pygame.key.get_pressed()
 
         for entity in entities:
-            entity.update(keys, win, time_since_last_tick/1000)
+            entity.update(win, time_since_last_tick/1000)
             entity.draw(win)
 
         pygame.display.update()
