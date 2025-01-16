@@ -32,7 +32,8 @@ def parameter_selection_screen():
         "n_humans": 15,
         "boid_fear": 20,
         "boid_radius": 100,
-        "boid_max_speed": 100
+        "boid_max_speed": 100,
+        "simulation_time": 30,  # New parameter for simulation time
     }
 
     input_boxes = {
@@ -49,7 +50,6 @@ def parameter_selection_screen():
         screen.blit(text_surface, text_rect)
 
     def draw_screen():
-
         screen.fill((30, 30, 30))  # Dark background for a professional look
         title = title_font.render("Parameter Selection", True, (255, 255, 255))
         screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 30))
@@ -116,6 +116,25 @@ def parameter_selection_screen():
         clock.tick(30)
 
 
+def show_results_screen(humans_found):
+    pygame.display.set_caption("Simulation Results")
+    screen = pygame.display.set_mode((800, 600))
+    font = pygame.font.Font(None, 48)
+
+    running = True
+    while running:
+        screen.fill((30, 30, 30))
+        text = font.render(f"Humans found: {humans_found}", True, (255, 255, 255))
+        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+
 def check_collision(entity1, entity2, radius):
     entity2_x, entity2_y = entity2.pos
     distance = ((entity1.x - entity2_x) ** 2 + (entity1.y - entity2_y) ** 2) ** 0.5
@@ -137,6 +156,7 @@ def main():
         boid_fear = parameters["boid_fear"]
         boid_radius = parameters["boid_radius"]
         boid_max_speed = parameters["boid_max_speed"]
+        simulation_time = parameters["simulation_time"]
 
         game_settings = GameSettings()
         # game_settings.debug = True
@@ -210,11 +230,16 @@ def main():
         tick_length = int(1000/game_settings.ticks_per_second)
 
         last_tick = pygame.time.get_ticks()
+        simulation_start_time = pygame.time.get_ticks()
+        humans_found = 0
         while game_settings.is_running:
             win.fill(fill_colour)
 
             for obstacle in obstacles:
                 obstacle.draw(win)
+
+            humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
+            humans_found = n_humans - len(humans)
 
             humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
 
@@ -236,11 +261,14 @@ def main():
 
             keys = pygame.key.get_pressed()
 
+            if (pygame.time.get_ticks() - simulation_start_time) > simulation_time * 1000:
+                break  # End simulation after the specified time
+
             for entity in entities:
                 entity.update(keys, win, time_since_last_tick/1000)
 
             pygame.display.flip()
-
+        show_results_screen(f'{humans_found} out of {n_humans} humans found')
         pygame.quit()
 
 

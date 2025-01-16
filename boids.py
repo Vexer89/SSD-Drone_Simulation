@@ -10,7 +10,6 @@ from engine import Entity, EntityAction
 from physics_2d import PhysicsObject
 
 from game_settings import GameSettings
-from obstacle import Obstacle
 
 
 logger = logging.getLogger(__name__)
