@@ -10,6 +10,8 @@ from engine import CharacterEntity
 from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
 from game_settings import GameSettings
 import sys
+
+from map import Map
 from obstacle import *
 from human import Human
 
@@ -170,6 +172,7 @@ def is_valid_position(x, y, obstacles):
 
 def main():
     while True:
+
         parameters = parameter_selection_screen()
 
         # Extract parameters
@@ -193,6 +196,8 @@ def main():
 
         max_width = win.get_width()
         max_height = win.get_height()
+
+        sim_map = Map(max_width, max_height)
 
         rect1 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 300, 100, light_gray)
         rect2 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 100, 300, light_gray)
@@ -256,6 +261,8 @@ def main():
         humans_found = 0
         while game_settings.is_running:
             win.fill(fill_colour)
+
+            sim_map.draw(win)
 
             for obstacle in obstacles:
                 obstacle.draw(win)
