@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 pygame.init()
+
 def parameter_selection_screen():
+    if not pygame.font.get_init():
+        pygame.font.init()
+
     pygame.display.set_caption("Parameter Selection - Boid Simulation")
     screen = pygame.display.set_mode((800, 600))
     font = pygame.font.Font(None, 36)
@@ -117,22 +121,40 @@ def parameter_selection_screen():
 
 
 def show_results_screen(humans_found):
+    if not pygame.font.get_init():
+        pygame.font.init()
     pygame.display.set_caption("Simulation Results")
     screen = pygame.display.set_mode((800, 600))
     font = pygame.font.Font(None, 48)
+    small_font = pygame.font.Font(None, 36)
+    clock = pygame.time.Clock()
+
+    restart_button = pygame.Rect(300, 400, 200, 50)  # Define the Restart button rectangle
 
     running = True
     while running:
         screen.fill((30, 30, 30))
         text = font.render(f"Humans found: {humans_found}", True, (255, 255, 255))
-        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2))
+        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - 100))
+
+        # Draw the Restart button
+        pygame.draw.rect(screen, (0, 200, 0), restart_button, border_radius=10)
+        restart_text = small_font.render("Restart", True, (0, 0, 0))
+        screen.blit(restart_text, (restart_button.x + (restart_button.width - restart_text.get_width()) // 2,
+                                   restart_button.y + (restart_button.height - restart_text.get_height()) // 2))
 
         pygame.display.flip()
+        clock.tick(30)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button.collidepoint(event.pos):
+                    running = False
+                    #parameter_selection_screen()
+
+    pygame.quit()
 
 
 def check_collision(entity1, entity2, radius):
