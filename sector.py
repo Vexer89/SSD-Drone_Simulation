@@ -36,3 +36,15 @@ class Sector:
 
     def mark_searched(self):
         self.searched = True
+
+    def contains_point(self, point):
+        """
+        Sprawdza, czy dany punkt (x, y) znajduje się w sektorze.
+        """
+        x, y = point
+        x_min = self.col * self.size
+        x_max = x_min + self.size
+        y_min = self.row * self.size
+        y_max = y_min + self.size
+
+        return x_min <= x < x_max and y_min <= y < y_max

@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List
 import logging
 import random
@@ -240,8 +241,6 @@ def main():
         while game_settings.is_running:
             win.fill(fill_colour)
 
-            sim_map.draw(win)
-
             for obstacle in obstacles:
                 obstacle.draw(win)
 
@@ -252,6 +251,15 @@ def main():
 
             for i in range(len(humans)):
                 Human.draw(humans[i], win)
+
+            for sector in list(chain(*sim_map.sectors)):
+                for boid in entities:
+                    if sector.contains_point(boid.pos):
+                        sector.mark_searched()
+
+
+            sim_map.draw(win)
+
 
 
             time_since_last_tick = pygame.time.get_ticks() - last_tick
