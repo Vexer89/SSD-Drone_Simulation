@@ -68,8 +68,6 @@ class Drone(PhysicsObject):
             random.randint(0, 255)
         )
 
-
-
     @PhysicsObject.v.setter
     def v(self, value: Vector2D):
         magnitude = value.magnitude()

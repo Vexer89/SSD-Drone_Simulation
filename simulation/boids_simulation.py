@@ -8,6 +8,7 @@ import numpy as np
 from entities.swarm.drones import DroneFlock
 from entities.swarm.control_rules import BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
 from game_settings import GameSettings
+from map.sector import Sector
 
 from entities.obstacle import *
 
@@ -23,6 +24,8 @@ pygame.init()
 # sector and human generation
 # human mark as found
 # simulation  time limit
+
+
 
 def main():
     game_settings = GameSettings()
@@ -49,6 +52,19 @@ def main():
 
     obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
 
+    sector_size = 50
+    num_rows = game_settings.window_height // sector_size
+    num_cols = game_settings.window_width // sector_size
+
+    # Tworzenie sektorów
+    sectors = [[Sector(row, col, sector_size) for col in range(num_cols)] for row in range(num_rows)]
+
+    # Funkcja do rysowania sektorów
+    def draw_sectors():
+        for row in sectors:
+            for sector in row:
+                sector.draw(win)
+
     flock = DroneFlock(game_settings)
     flock_rules: List[BoidRule] = [
         CohesionRule(weighting=0.8, game_settings=game_settings),
@@ -68,8 +84,12 @@ def main():
     while game_settings.is_running:
         win.fill(fill_colour)
 
+        # Rysowanie przeszkód
         for obstacle in obstacles:
             obstacle.draw(win)
+
+        # Rysowanie sektorów
+        draw_sectors()
 
         time_since_last_tick = pygame.time.get_ticks() - last_tick
         if time_since_last_tick < tick_length:
