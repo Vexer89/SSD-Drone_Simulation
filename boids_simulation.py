@@ -27,7 +27,7 @@ def parameter_selection_screen():
         pygame.font.init()
 
     pygame.display.set_caption("Parameter Selection - Boid Simulation")
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((1024, 768))
     font = pygame.font.Font(None, 36)
     title_font = pygame.font.Font(None, 48)
     clock = pygame.time.Clock()
@@ -40,6 +40,8 @@ def parameter_selection_screen():
         "boid_radius": 100,
         "boid_max_speed": 100,
         "simulation_time": 30,  # New parameter for simulation time
+        "rows" : 10,
+        "columns" : 10
     }
 
     input_boxes = {
@@ -75,8 +77,8 @@ def parameter_selection_screen():
             screen.blit(text_surface, (rect.x + 10, rect.y + 5))
 
         # Buttons
-        start_button = pygame.Rect(200, 500, 150, 50)
-        reset_button = pygame.Rect(450, 500, 150, 50)
+        start_button = pygame.Rect(200, 700, 150, 50)
+        reset_button = pygame.Rect(450, 700, 150, 50)
         draw_button(start_button, "Start", (0, 200, 0), (0, 0, 0))
         draw_button(reset_button, "Reset", (200, 0, 0), (255, 255, 255))
 
@@ -182,6 +184,8 @@ def main():
         boid_radius = parameters["boid_radius"]
         boid_max_speed = parameters["boid_max_speed"]
         simulation_time = parameters["simulation_time"]
+        rows = parameters["rows"]
+        columns = parameters["columns"]
 
         game_settings = GameSettings()
         # game_settings.debug = True
@@ -197,7 +201,7 @@ def main():
         max_width = win.get_width()
         max_height = win.get_height()
 
-        sim_map = Map(max_width, max_height)
+        sim_map = Map(max_width, max_height, rows, columns)
 
         rect1 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 300, 100, light_gray)
         rect2 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 100, 300, light_gray)

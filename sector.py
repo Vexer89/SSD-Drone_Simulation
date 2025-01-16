@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from constants import GREEN, WHITE
+from constants import *
 from equation_const import ALPHA, BETA
 
 class Sector:
@@ -24,7 +24,7 @@ class Sector:
         self.attractiveness = neighbor_contribution - penalty
 
     def draw(self, screen):
-        color = GREEN if self.searched else WHITE
+        color = GREEN if self.searched else GRAY
         pygame.draw.rect(
             screen,
             color,
