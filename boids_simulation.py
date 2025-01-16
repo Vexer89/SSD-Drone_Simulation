@@ -7,7 +7,8 @@ import numpy as np
 
 #from controls import default_controls
 from engine import CharacterEntity
-from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule,CohesionRule, SideBySideFormationRule, AvoidObstaclesRule
+from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
+    SideBySideFormationRule, AvoidObstaclesRule, NoiseRule
 from game_settings import GameSettings
 import sys
 from obstacle import *
@@ -28,10 +29,10 @@ def parameter_selection_screen():
 
     # Default parameter values
     parameters = {
-        "n_boids": 50,
+        "n_boids": 10,
         "n_humans": 15,
-        "boid_fear": 20,
-        "boid_radius": 100,
+        "boid_fear": 10,
+        "boid_radius": 50,
         "boid_max_speed": 100
     }
 
@@ -192,8 +193,9 @@ def main():
             AlignmentRule(weighting=0.7, game_settings=game_settings),
             AvoidWallsRule(weighting=1, game_settings=game_settings, push_force=100),
             SimpleSeparationRule(weighting=0.9, game_settings=game_settings, push_force=boid_fear),
-            SideBySideFormationRule(weighting=0.15, game_settings=game_settings, spacing=90, noise_factor=0.1),
+            # SideBySideFormationRule(weighting=0.15, game_settings=game_settings, spacing=90, noise_factor=0.1),
             AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
+            # NoiseRule(weighting=0.1, game_settings=game_settings)
         ]
 
         positions = []

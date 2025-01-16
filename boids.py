@@ -14,6 +14,7 @@ from obstacle import Obstacle
 
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class BoidFlock:
@@ -57,6 +58,7 @@ class Boid(PhysicsObject):
     def __init__(self, *args, flock: BoidFlock, position, colour=None, rules=None, size=10, local_radius=200, max_velocity=30,
                  speed=20, **kwargs):
         super().__init__(*args, **kwargs)
+        logging.debug(f"Inicjalizacja Boid: {kwargs}")
 
         if colour is None:
             colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -67,12 +69,12 @@ class Boid(PhysicsObject):
         self.colour = colour
         self.flock = flock
         self.size = size
-        self._pos = position
+        self._pos = np.array(position, dtype=np.float64)
 
         self.local_radius = local_radius
         self.max_velocity = max_velocity
         self.speed = speed
-        self._v = np.array([0, 0])
+        self._v = np.array([0.0, 0.0], dtype='float')
 
         self.rules = rules
         self.n_neighbours = 0
@@ -91,24 +93,24 @@ class Boid(PhysicsObject):
         self._v = v
 
     def draw(self, win):
-        if abs(self.v).sum() == 0:
-            direction = np.array([0, 1])
-        else:
+        # Kierunek prędkości używany do obliczenia orientacji
+        if np.linalg.norm(self.v) > 0:
             direction = self.v / np.linalg.norm(self.v)
+        else:
+            direction = np.array([1, 0])  # Domyślny kierunek, gdy prędkość jest zerowa
 
         direction *= self.size
         perpendicular_direction = np.cross(np.array([*direction, 0]), np.array([0, 0, 1]))[:2]
 
-        centre = self.pos
-
         points = [
-            0.5*direction + centre,
-            -0.5*direction + 0.25*perpendicular_direction + centre,
-            -0.25*direction + centre,
-            -0.5*direction - 0.25*perpendicular_direction + centre,
+            0.5 * direction + self.pos,
+            -0.5 * direction + 0.25 * perpendicular_direction + self.pos,
+            -0.25 * direction + self.pos,
+            -0.5 * direction - 0.25 * perpendicular_direction + self.pos,
         ]
-
-        pygame.draw.polygon(win, self.colour, points)
+        # Konwersja punktów na int przed rysowaniem
+        int_points = [(int(x), int(y)) for x, y in points]
+        pygame.draw.polygon(win, self.colour, int_points)
 
     def update_physics(self, actions: List[EntityAction], time_elapsed):
 
@@ -119,7 +121,9 @@ class Boid(PhysicsObject):
 
         self.v = self.v + direction * self.speed
 
-        self._pos += (self.v * time_elapsed).astype(int)
+        self._pos += self.v * time_elapsed
+
+        logging.debug(f"Aktualizacja fizyki Boid na pozycji {self._pos} z prędkością {self._v}")
 
         # TODO: Game clock
 
@@ -165,15 +169,16 @@ class BoidRule(ABC):
 
 
 class SimpleSeparationRule(BoidRule):
-    def __init__(self, *args, push_force=5, **kwargs):
+    def __init__(self, *args, push_force=5, random_movement_factor=0.1, **kwargs):
         super().__init__(*args, **kwargs)
         self.push_force = push_force
+        self.random_movement_factor = random_movement_factor  # dodatkowy parametr do sterowania losowym ruchem
 
     _name = "Separation"
 
     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
         n = len(local_boids)
-        if n > 1:
+        if n > 0:
             direction_offsets = np.array([(boid.pos - other_boid.pos) for other_boid in local_boids])
             magnitudes = np.sum(np.abs(direction_offsets)**2, axis=-1)**(1./2)
 
@@ -184,7 +189,8 @@ class SimpleSeparationRule(BoidRule):
             normed_directions = direction_offsets / magnitudes[:, np.newaxis]
             v = np.sum(normed_directions * (self.push_force / magnitudes)[:, np.newaxis], axis=0)
         else:
-            v = np.array([0, 0])
+            # Gdy nie ma lokalnych boidów, generuj losowy wektor ruchu
+            v = np.random.randn(2) * self.random_movement_factor
 
         return np.nan_to_num(v)
 
@@ -198,15 +204,20 @@ class AlignmentRule(BoidRule):
 
     def _evaluate(self, boid: Boid, local_boids, **kwargs):
         if not local_boids:
-            return np.array([0, 0])
+            # Kontynuacja ruchu w obecnym kierunku prędkości
+            if np.linalg.norm(boid.v) > 0:
+                return boid.v / np.linalg.norm(boid.v)
+            else:
+                return np.array([0, 0])  # Brak ruchu, jeśli prędkość początkowa jest zero
 
-        # Align velocities
+        # Wyrównaj prędkości
         avg_velocity = np.mean([b.v for b in local_boids], axis=0)
         if np.linalg.norm(avg_velocity) == 0:
             return np.array([0, 0])
 
         # Normalize to match boid speed
         return avg_velocity / np.linalg.norm(avg_velocity)
+
 
 
 
@@ -218,13 +229,18 @@ class CohesionRule(BoidRule):
 
     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
         if len(local_boids) == 0:
-            return np.array([0, 0])
+            # Losowy kierunek, gdy nie ma sąsiednich boidów
+            random_direction = np.random.rand(2) - 0.5
+            random_direction = random_direction / np.linalg.norm(random_direction)
+            return random_direction
+
         average_pos = np.array([b.pos for b in local_boids]).mean(axis=0)
         diff = average_pos - boid.pos
         mag = np.sqrt((diff**2).sum())
         if mag == 0:
             return np.array([0, 0])
         return diff / mag
+
 
 
 class AvoidWallsRule(BoidRule):
@@ -282,14 +298,14 @@ class MoveRightRule(BoidRule):
         return np.array([10, 0])
 
 
-# class NoiseRule(BoidRule):
-#     _name = "Noise"
+class NoiseRule(BoidRule):
+    _name = "Noise"
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-#     def _evaluate(self, boid, local_boids: List[Boid], **kwargs):
-#         return np.random.uniform(-1, 1, 2)
+    def _evaluate(self, boid, local_boids: List[Boid], **kwargs):
+        return np.random.uniform(-1, 1, 2)
 
 
 # class SpiralRule(BoidRule):

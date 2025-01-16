@@ -22,7 +22,7 @@ class GameSettings:
         self.zoom_factor = 0.05
 
         self.is_running = True
-        self.ticks_per_second = 144
+        self.ticks_per_second = 60
 
         self.x_edge_behaviour = MapEdgeBehaviour.WRAP
         self.y_edge_behaviour = MapEdgeBehaviour.WRAP
