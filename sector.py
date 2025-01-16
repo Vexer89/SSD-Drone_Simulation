@@ -24,7 +24,7 @@ class Sector:
         self.attractiveness = neighbor_contribution - penalty
 
     def draw(self, screen):
-        color = GREEN if self.searched else GRAY
+        color = (0, 0, 0) if self.searched else GRAY
         pygame.draw.rect(
             screen,
             color,

@@ -11,9 +11,9 @@ from physics_2d import PhysicsObject
 
 from game_settings import GameSettings
 
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+#
+# logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class BoidFlock:
@@ -164,7 +164,7 @@ class BoidRule(ABC):
     def evaluate(self, boid, local_boids: List[Boid], actions):
         output = self._evaluate(boid, local_boids, actions=actions)
         if np.isnan(output).any():
-            logger.warning(f"NaN encountered in {self.name}")
+            # logger.warning(f"NaN encountered in {self.name}")
             return np.array([0, 0])
         return output
 

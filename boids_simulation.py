@@ -12,6 +12,7 @@ from engine import CharacterEntity
 from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
     SideBySideFormationRule, AvoidObstaclesRule, NoiseRule, AntiCollisionRule
 from game_settings import GameSettings
+from simulation.obsticles.circle_obsticle import *
 import sys
 
 from map import Map
@@ -37,14 +38,14 @@ def parameter_selection_screen():
 
     # Default parameter values
     parameters = {
-        "n_boids": 50,
+        "n_boids": 30,
         "n_humans": 15,
-        "boid_fear": 15,
-        "boid_radius": 100,
+        "boid_fear": 20,
+        "boid_radius": 50,
         "boid_max_speed": 100,
-        "simulation_time": 30,  # New parameter for simulation time
-        "rows" : 10,
-        "columns" : 10
+        "simulation_time": 40,  # New parameter for simulation time
+        "rows" : 30,
+        "columns" : 30
     }
 
     input_boxes = {
@@ -228,7 +229,22 @@ def main():
         polyg3 = PolygonObstacle([(x + polyg3_origin[0], y + polyg3_origin[1]) for x, y in polygon3_vertices], light_gray)
         polyg4 = PolygonObstacle([(x + polyg4_origin[0], y + polyg4_origin[1]) for x, y in polygon4_vertices], light_gray)
 
-        obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
+        # obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
+
+        def generate_circle_obstacles(map_width, map_height, num_obstacles, min_radius, max_radius, color):
+            obstacles = []
+            for _ in range(num_obstacles):
+                x = random.randint(0, map_width)
+                y = random.randint(0, map_height)
+                radius = random.randint(min_radius, max_radius)
+                obstacles.append(CircleObstacle(x, y, radius, color))
+            return obstacles
+
+        obstacles = generate_circle_obstacles(
+            game_settings.map_width, game_settings.map_height, num_obstacles=70, min_radius=10, max_radius=20, color=(119, 49, 9)
+        )
+
+        
 
         human_positions = []
         for _ in range(n_humans):
@@ -244,32 +260,72 @@ def main():
         flock_rules: List[BoidRule] = [
             CohesionRule(weighting=0.7, game_settings=game_settings),
             AlignmentRule(weighting=0.7, game_settings=game_settings),
-            AvoidWallsRule(weighting=1, game_settings=game_settings, push_force=100),
+            AvoidWallsRule(weighting=2, game_settings=game_settings, push_force=100),
             SimpleSeparationRule(weighting=0.9, game_settings=game_settings, push_force=boid_fear),
             # SideBySideFormationRule(weighting=0.3, game_settings=game_settings, spacing=50, noise_factor=0.1),
-            AvoidObstaclesRule(weighting=1, game_settings=game_settings, obstacles=obstacles, push_force=100),
+            AvoidObstaclesRule(weighting=2, game_settings=game_settings, obstacles=obstacles, push_force=100),
             NoiseRule(weighting=0.1, game_settings=game_settings),
             # AntiCollisionRule(weighting=0.7, game_settings=game_settings)
         ]
 
-        positions = []
-        for _ in range(n_boids):
-            while True:
-                x, y = random.randint(0, win.get_width()), random.randint(0, win.get_height())
-                if is_valid_position(x, y, obstacles):
-                    positions.append((x, y))
-                    break      
+        def generate_positions_in_sector(n_boids, win, obstacles):
+            """Generuje pozycje dla dronów w losowo wybranym sektorze planszy."""
+            positions = []
+
+            # Określ losowy sektor (np. prawy dolny róg)
+            width, height = win.get_width(), win.get_height()
+            sector_width, sector_height = width // 3, height // 3
+            sector_x_start = random.choice([0, width // 3])
+            sector_y_start = random.choice([0, height // 3])
+            sector_x_end = sector_x_start + sector_width
+            sector_y_end = sector_y_start + sector_height
+
+            for _ in range(n_boids):
+                while True:
+                    # Generuj pozycje w obrębie sektora
+                    x = random.randint(sector_x_start, sector_x_end - 1)
+                    y = random.randint(sector_y_start, sector_y_end - 1)
+
+                    # Sprawdzaj, czy pozycja jest ważna (bez kolizji)
+                    if is_valid_position(x, y, obstacles) and not any(
+                            ((x - px) ** 2 + (y - py) ** 2) ** 0.5 < 15 for px, py in positions
+                    ):
+                        positions.append((x, y))
+                        break
+
+            return positions
+
+        positions = generate_positions_in_sector(n_boids, win, obstacles)
+
+        # positions = []
+        # for _ in range(n_boids):
+        #     while True:
+        #         x, y = random.randint(0, win.get_width()), random.randint(0, win.get_height())
+        #         if is_valid_position(x, y, obstacles):
+        #             positions.append((x, y))
+        #             break
 
         flock.generate_boids(n_boids, positions, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed)
         
         entities = flock.boids
         tick_length = int(1000/game_settings.ticks_per_second)
 
+
         last_tick = pygame.time.get_ticks()
         simulation_start_time = pygame.time.get_ticks()
         humans_found = 0
         while game_settings.is_running:
             win.fill(fill_colour)
+
+            for sector in list(chain(*sim_map.sectors)):
+                for boid in entities:
+                    if sector.contains_point(boid.pos):
+                        sector.mark_searched()
+
+
+            sim_map.draw(win)
+
+            sim_map.update_attractiveness()
 
             for obstacle in obstacles:
                 obstacle.draw(win)
@@ -282,15 +338,7 @@ def main():
             for i in range(len(humans)):
                 Human.draw(humans[i], win)
 
-            for sector in list(chain(*sim_map.sectors)):
-                for boid in entities:
-                    if sector.contains_point(boid.pos):
-                        sector.mark_searched()
 
-
-            sim_map.draw(win)
-
-            sim_map.update_attractiveness()
 
             time_since_last_tick = pygame.time.get_ticks() - last_tick
             if time_since_last_tick < tick_length:
