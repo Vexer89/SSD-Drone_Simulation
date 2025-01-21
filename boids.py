@@ -377,7 +377,36 @@ class SideBySideFormationRule(BoidRule):
         return np.nan_to_num(total_force)
 
 
+class AttractionRule(BoidRule):
+    def __init__(self, *args, sim_map, **kwargs):
 
+        super().__init__(*args, **kwargs)
+        self.sim_map = sim_map
+
+    def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
+
+        max_attractiveness = -float('inf')
+        best_sector = None
+
+        for row in self.sim_map.sectors:
+            for sector in row:
+                attractiveness = sector.attractiveness
+                if attractiveness > max_attractiveness:
+                    max_attractiveness = attractiveness
+                    if self.sim_map.best_sector:
+                        if abs(max_attractiveness - self.sim_map.best_sector.attractiveness) <= 0.1:
+                            best_sector = self.sim_map.best_sector
+                    else:
+                        best_sector = sector
+
+        self.sim_map.best_sector = best_sector
+
+        if best_sector:
+            direction_to_sector = np.array(best_sector.center) - np.array(boid.pos)
+            norm_direction = direction_to_sector / np.linalg.norm(direction_to_sector)
+            return norm_direction
+
+        return np.array([0, 0])
 
 # class ControlRule(BoidRule):
 #     def __init__(self, *args, control_factor, **kwargs):

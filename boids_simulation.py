@@ -10,7 +10,7 @@ from scipy.cluster.hierarchy import weighted
 #from controls import default_controls
 from engine import CharacterEntity
 from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
-    SideBySideFormationRule, AvoidObstaclesRule, NoiseRule, AntiCollisionRule
+    SideBySideFormationRule, AvoidObstaclesRule, NoiseRule, AntiCollisionRule, AttractionRule
 from game_settings import GameSettings
 from simulation.obsticles.circle_obsticle import *
 import sys
@@ -258,14 +258,15 @@ def main():
 
         flock = BoidFlock(game_settings)
         flock_rules: List[BoidRule] = [
-            CohesionRule(weighting=0.7, game_settings=game_settings),
-            AlignmentRule(weighting=0.7, game_settings=game_settings),
-            AvoidWallsRule(weighting=2, game_settings=game_settings, push_force=100),
+            CohesionRule(weighting=0.4, game_settings=game_settings),
+            AlignmentRule(weighting=0.4, game_settings=game_settings),
+            AvoidWallsRule(weighting=1.5, game_settings=game_settings, push_force=100),
             SimpleSeparationRule(weighting=0.9, game_settings=game_settings, push_force=boid_fear),
             # SideBySideFormationRule(weighting=0.3, game_settings=game_settings, spacing=50, noise_factor=0.1),
-            AvoidObstaclesRule(weighting=2, game_settings=game_settings, obstacles=obstacles, push_force=100),
+            AvoidObstaclesRule(weighting=1.5, game_settings=game_settings, obstacles=obstacles, push_force=100),
             NoiseRule(weighting=0.1, game_settings=game_settings),
             # AntiCollisionRule(weighting=0.7, game_settings=game_settings)
+            AttractionRule(weighting=0.3, game_settings=game_settings, sim_map=sim_map)
         ]
 
         def generate_positions_in_sector(n_boids, win, obstacles):
@@ -314,6 +315,8 @@ def main():
         last_tick = pygame.time.get_ticks()
         simulation_start_time = pygame.time.get_ticks()
         humans_found = 0
+
+        i = 0
         while game_settings.is_running:
             win.fill(fill_colour)
 
@@ -324,16 +327,21 @@ def main():
 
 
             sim_map.draw(win)
+            # if i < 5:
+            #     i += 1
+            # else:
+            #     sim_map.update_attractiveness()
+            #     i = 0
 
             sim_map.update_attractiveness()
 
             for obstacle in obstacles:
                 obstacle.draw(win)
 
-            humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
+            humans = [human for human in humans if not any(check_collision(human, boid, 20) for boid in entities)]
             humans_found = n_humans - len(humans)
 
-            humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
+            #humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
 
             for i in range(len(humans)):
                 Human.draw(humans[i], win)

@@ -1,2 +1,2 @@
-ALPHA = 0.5
-BETA = 0.3
+ALPHA = 0.9
+BETA = 1
