@@ -1,12 +1,13 @@
 from itertools import chain
 from typing import List
 import logging
+import random
 
 
 from simulation.boids.boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
     AvoidObstaclesRule, NoiseRule, AttractionRule
 from simulation.config.game_settings import GameSettings
-from simulation.obstacles.circle_obsticle import *
+from simulation.obstacles.obstacle import *
 import sys
 
 from simulation.map.map import Map
@@ -36,7 +37,7 @@ def parameter_selection_screen():
         "boid_fear": 20,
         "boid_radius": 50,
         "boid_max_speed": 100,
-        "simulation_time": 40,  # New parameter for simulation time
+        "simulation_time": 40,
         "rows" : 30,
         "columns" : 30
     }
@@ -55,27 +56,37 @@ def parameter_selection_screen():
         screen.blit(text_surface, text_rect)
 
     def draw_screen():
-        screen.fill((30, 30, 30))  # Dark background for a professional look
+        screen.fill((30, 30, 30))
         title = title_font.render("Parameter Selection", True, (255, 255, 255))
         screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 30))
 
+        label_x = screen.get_width() // 2 - 200
+        box_x = screen.get_width() // 2 + 50
+
         for i, (key, rect) in enumerate(input_boxes.items()):
             label = font.render(f"{key.replace('_', ' ').capitalize()}: ", True, (200, 200, 200))
-            screen.blit(label, (100, rect.y + 5))
+            screen.blit(label, (label_x, rect.y + 5))
 
-            # Highlight active box in dark green
+            rect.x = box_x
+
             if key == active_box:
-                pygame.draw.rect(screen, (0, 100, 0), rect, border_radius=5)  # Green background for active box
+                pygame.draw.rect(screen, (0, 100, 0), rect, border_radius=5)
             else:
-                pygame.draw.rect(screen, (100, 100, 100), rect, border_radius=5)  # Default background color
+                pygame.draw.rect(screen, (100, 100, 100), rect, border_radius=5)
 
-            pygame.draw.rect(screen, (200, 200, 200), rect, 2, border_radius=5)  # Border for all boxes
+            pygame.draw.rect(screen, (200, 200, 200), rect, 2, border_radius=5)
             text_surface = font.render(user_inputs[key], True, (255, 255, 255))
             screen.blit(text_surface, (rect.x + 10, rect.y + 5))
 
-        # Buttons
-        start_button = pygame.Rect(200, 700, 150, 50)
-        reset_button = pygame.Rect(450, 700, 150, 50)
+        button_width = 150
+        button_height = 50
+        spacing = 50
+        total_width = 2 * button_width + spacing
+
+        start_button = pygame.Rect(screen.get_width() // 2 - total_width // 2, 700, button_width, button_height)
+        reset_button = pygame.Rect(screen.get_width() // 2 - total_width // 2 + button_width + spacing, 700,
+                                   button_width, button_height)
+
         draw_button(start_button, "Start", (0, 200, 0), (0, 0, 0))
         draw_button(reset_button, "Reset", (200, 0, 0), (255, 255, 255))
 
@@ -204,25 +215,22 @@ def main():
         rect2 = RectangleObstacle(random.randint(0, max_width), random.randint(0, max_height), 100, 300, light_gray)
         circ1 = CircleObstacle(random.randint(0, max_width), random.randint(0, max_height), 100, light_gray)
         circ2 = CircleObstacle(random.randint(0, max_width), random.randint(0, max_height), 120, light_gray)
-        # Define the dimensions of the polygons
+
         polygon1_vertices = [(0, 0), (150, 50), (100, 100), (-50, 50)]
         polygon2_vertices = [(0, 0), (100, 50), (50, 100), (-50, 50)]
         polygon3_vertices = [(0, 0), (200, 100), (150, 200), (-100, 100)]
         polygon4_vertices = [(0, 0), (250, 150), (200, 300), (-150, 150)]
 
-        # Generate random positions for the polygons
         polyg1_origin = (random.randint(0, max_width), random.randint(0, max_height))
         polyg2_origin = (random.randint(0, max_width), random.randint(0, max_height))
         polyg3_origin = (random.randint(0, max_width), random.randint(0, max_height))
         polyg4_origin = (random.randint(0, max_width), random.randint(0, max_height))
 
-        # Create the polygons with random positions
         polyg1 = PolygonObstacle([(x + polyg1_origin[0], y + polyg1_origin[1]) for x, y in polygon1_vertices], light_gray)
         polyg2 = PolygonObstacle([(x + polyg2_origin[0], y + polyg2_origin[1]) for x, y in polygon2_vertices], light_gray)
         polyg3 = PolygonObstacle([(x + polyg3_origin[0], y + polyg3_origin[1]) for x, y in polygon3_vertices], light_gray)
         polyg4 = PolygonObstacle([(x + polyg4_origin[0], y + polyg4_origin[1]) for x, y in polygon4_vertices], light_gray)
 
-        # # obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
 
         def generate_circle_obstacles(map_width, map_height, num_obstacles, min_radius, max_radius, color):
             obstacles = []
@@ -266,7 +274,6 @@ def main():
             """Generuje pozycje dla dronów w losowo wybranym sektorze planszy."""
             positions = []
 
-            # Określ losowy sektor (np. prawy dolny róg)
             width, height = win.get_width(), win.get_height()
             sector_width, sector_height = width // 3, height // 3
             sector_x_start = random.choice([0, width // 3])
@@ -276,11 +283,9 @@ def main():
 
             for _ in range(n_boids):
                 while True:
-                    # Generuj pozycje w obrębie sektora
                     x = random.randint(sector_x_start, sector_x_end - 1)
                     y = random.randint(sector_y_start, sector_y_end - 1)
 
-                    # Sprawdzaj, czy pozycja jest ważna (bez kolizji)
                     if is_valid_position(x, y, obstacles) and not any(
                             ((x - px) ** 2 + (y - py) ** 2) ** 0.5 < 15 for px, py in positions
                     ):
