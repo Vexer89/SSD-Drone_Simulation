@@ -1,4 +1,4 @@
-from sector import Sector
+from simulation.map.sector import Sector
 
 class Map:
     def __init__(self, width, height, rows=10, columns=10):

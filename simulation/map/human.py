@@ -1,6 +1,6 @@
 import pygame
-import constants
-import random
+from simulation.config import constants
+
 
 class Human:
     def __init__(self, x, y, size=4, color=constants.RED):

@@ -1,23 +1,16 @@
 from itertools import chain
 from typing import List
 import logging
-import random
 
-import pygame
-import numpy as np
-from scipy.cluster.hierarchy import weighted
 
-#from controls import default_controls
-from engine import CharacterEntity
-from boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
-    SideBySideFormationRule, AvoidObstaclesRule, NoiseRule, AntiCollisionRule, AttractionRule
-from game_settings import GameSettings
-from simulation.obsticles.circle_obsticle import *
+from simulation.boids.boids import BoidFlock, BoidRule, SimpleSeparationRule, AvoidWallsRule, AlignmentRule, CohesionRule, \
+    AvoidObstaclesRule, NoiseRule, AttractionRule
+from simulation.config.game_settings import GameSettings
+from simulation.obstacles.circle_obsticle import *
 import sys
 
-from map import Map
-from obstacle import *
-from human import Human
+from simulation.map.map import Map
+from simulation.map.human import Human
 
 
 logging.basicConfig()
@@ -229,7 +222,7 @@ def main():
         polyg3 = PolygonObstacle([(x + polyg3_origin[0], y + polyg3_origin[1]) for x, y in polygon3_vertices], light_gray)
         polyg4 = PolygonObstacle([(x + polyg4_origin[0], y + polyg4_origin[1]) for x, y in polygon4_vertices], light_gray)
 
-        # obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
+        # # obstacles = [rect1, rect2, circ1, circ2, polyg1, polyg3, polyg4]
 
         def generate_circle_obstacles(map_width, map_height, num_obstacles, min_radius, max_radius, color):
             obstacles = []
@@ -298,14 +291,6 @@ def main():
 
         positions = generate_positions_in_sector(n_boids, win, obstacles)
 
-        # positions = []
-        # for _ in range(n_boids):
-        #     while True:
-        #         x, y = random.randint(0, win.get_width()), random.randint(0, win.get_height())
-        #         if is_valid_position(x, y, obstacles):
-        #             positions.append((x, y))
-        #             break
-
         flock.generate_boids(n_boids, positions, rules=flock_rules, local_radius=boid_radius, max_velocity=boid_max_speed)
         
         entities = flock.boids
@@ -327,12 +312,6 @@ def main():
 
 
             sim_map.draw(win)
-            # if i < 5:
-            #     i += 1
-            # else:
-            #     sim_map.update_attractiveness()
-            #     i = 0
-
             sim_map.update_attractiveness()
 
             for obstacle in obstacles:
@@ -340,8 +319,6 @@ def main():
 
             humans = [human for human in humans if not any(check_collision(human, boid, 20) for boid in entities)]
             humans_found = n_humans - len(humans)
-
-            #humans = [human for human in humans if not any(check_collision(human, boid, 15) for boid in entities)]
 
             for i in range(len(humans)):
                 Human.draw(humans[i], win)
@@ -363,7 +340,7 @@ def main():
             keys = pygame.key.get_pressed()
 
             if (pygame.time.get_ticks() - simulation_start_time) > simulation_time * 1000:
-                break  # End simulation after the specified time
+                break
 
             for entity in entities:
                 entity.update(keys, win, time_since_last_tick/1000)

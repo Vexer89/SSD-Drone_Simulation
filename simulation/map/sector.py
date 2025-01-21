@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
-from constants import *
-from equation_const import ALPHA, BETA
+from simulation.config.constants import *
+from simulation.config.equation_const import ALPHA, BETA
 
 class Sector:
     def __init__(self, row, col, size, searched=False):

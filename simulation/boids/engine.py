@@ -5,7 +5,7 @@ from typing import Dict, List
 import numpy as np
 import pygame
 
-from game_settings import MapEdgeBehaviour, GameSettings
+from simulation.config.game_settings import MapEdgeBehaviour, GameSettings
 
 
 class EntityAction(Enum):
@@ -31,10 +31,6 @@ class Entity(ABC):
     @abstractmethod
     def draw(self, win):
         pass
-
-    # @property
-    # def pos(self):
-    #     return np.array([self.x, self.pos[1]])
 
     @abstractmethod
     def update_physics(self, actions: List[EntityAction], time_elapsed):

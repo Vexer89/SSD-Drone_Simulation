@@ -6,14 +6,10 @@ import logging
 import numpy as np
 import pygame
 
-from engine import Entity, EntityAction
-from physics_2d import PhysicsObject
+from simulation.boids.engine import Entity, EntityAction
+from simulation.boids.physics_2d import PhysicsObject
 
-from game_settings import GameSettings
-
-#
-# logger = logging.getLogger(__name__)
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+from simulation.config.game_settings import GameSettings
 
 
 class BoidFlock:
@@ -332,14 +328,6 @@ class NoiseRule(BoidRule):
     def _evaluate(self, boid, local_boids: List[Boid], **kwargs):
         return np.random.uniform(-1, 1, 2)
 
-
-# class SpiralRule(BoidRule):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-
-#     def _evaluate(self, boid: Boid, local_boids: List[Boid], **kwargs):
-#         return np.cross(boid.v, np.array([0, 0, 1]))[:2]
-
 class SideBySideFormationRule(BoidRule):
     _name = "SideBySideFormation"
 
@@ -407,29 +395,3 @@ class AttractionRule(BoidRule):
             return norm_direction
 
         return np.array([0, 0])
-
-# class ControlRule(BoidRule):
-#     def __init__(self, *args, control_factor, **kwargs):
-#         self.control_factor = control_factor
-#         super().__init__(*args, **kwargs)
-
-#     def _evaluate(self, boid: Boid, local_boids: List[Boid], actions: List[EntityAction]=None):
-#         v = np.array([0, 0])
-
-#         if actions is None:
-#             return v
-
-#         for action in actions:
-#             if action == EntityAction.MOVE_UP:
-#                 v[1] -= self.control_factor
-#                 continue
-#             if action == EntityAction.MOVE_DOWN:
-#                 v[1] += self.control_factor
-#                 continue
-#             if action == EntityAction.MOVE_LEFT:
-#                 v[0] -= self.control_factor
-#                 continue
-#             if action == EntityAction.MOVE_RIGHT:
-#                 v[0] += self.control_factor
-
-#         return v

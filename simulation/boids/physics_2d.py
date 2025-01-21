@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from engine import Entity
+from simulation.boids.engine import Entity
 
 
 class PhysicsObject(Entity, ABC):
