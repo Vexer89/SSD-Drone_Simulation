@@ -12,6 +12,16 @@ class Sector:
         self.attractiveness = 1.0  # Default attractiveness
         self.neighbors = []
 
+        self.center = self._calculate_center()
+
+    def _calculate_center(self):
+        """
+        Oblicza środek sektora na podstawie pozycji w siatce.
+        """
+        center_x = (self.col + 0.5) * self.size
+        center_y = (self.row + 0.5) * self.size
+        return (center_x, center_y)
+
     def add_neighbor(self, neighbor):
         self.neighbors.append(neighbor)
     

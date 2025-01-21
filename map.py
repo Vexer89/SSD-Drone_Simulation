@@ -10,16 +10,27 @@ class Map:
             [Sector(row, col, width // columns) for col in range(columns)]
             for row in range(rows)
         ]
+        self.best_sector = None
         self.__add_neighbours_to_sectors()
 
-    def __add_neighbours_to_sectors(self):
+    def __add_neighbours_to_sectors(self, radius=2):
+        """
+        Dodaje sąsiednie sektory do listy sąsiadów w zadanym promieniu.
+
+        :param radius: Zasięg, do którego mają być dodawani sąsiedzi (1 oznacza bezpośrednich sąsiadów, 2 dalszych itd.).
+        """
         for row_idx, row in enumerate(self.sectors):
             for col_idx, sector in enumerate(row):
-                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
-                    neighbor_row = row_idx + dy
-                    neighbor_col = col_idx + dx
-                    if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.columns:
-                        sector.add_neighbor(self.sectors[neighbor_row][neighbor_col])
+                for dx in range(-radius, radius + 1):
+                    for dy in range(-radius, radius + 1):
+                        if dx == 0 and dy == 0:
+                            continue  # Pomijamy sam sektor
+
+                        neighbor_row = row_idx + dy
+                        neighbor_col = col_idx + dx
+
+                        if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.columns:
+                            sector.add_neighbor(self.sectors[neighbor_row][neighbor_col])
 
     def draw(self, screen):
         for row in self.sectors:
